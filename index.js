@@ -53,8 +53,15 @@ Promise.all([getEducationData, getCountyData])
         const colorScale = d3.scaleQuantize([3, 75], d3.schemeGreens[8]);
         const path = d3.geoPath();
 
+        const US_MAP = svg.append('g')
+            .attr('id', 'USMAP')
+            .attr('width', w - margin.left - margin.right)
+            .attr('height', 600)
+            .attr('x', margin.left)
+            .attr('y', margin.top * 5);
+
         // county path
-        svg.append('g')
+        US_MAP.append('g')
             .selectAll('path')
             .data(topojson.feature(countyData, countyData.objects.counties).features)
             .join('path')
@@ -63,7 +70,7 @@ Promise.all([getEducationData, getCountyData])
             .attr('d', path);
 
         // state path
-        svg.append('path')
+        US_MAP.append('path')
             .datum(topojson.mesh(countyData, countyData.objects.states, (a, b) => a !== b))
             .attr('fill', 'none')
             .attr('stroke', 'white')
