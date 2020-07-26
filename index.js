@@ -68,21 +68,15 @@ Promise.all([getEducationData, getCountyData])
             .data(topojson.feature(countyData, countyData.objects.counties).features)
             .join('path')
             .attr('class', 'county')
-            .attr('id', (d, i) => 'county' + i)
             .attr('data-fips', d => d.id)
             .attr('data-education', d => data[d.id]['bachelorsOrHigher'])
             .attr('fill', d => colorScale(data[d.id]['bachelorsOrHigher']))
             .attr('d', path)
             .on('mouseover', (d, i) => {
-                const county = document.querySelector('#county' + i);
-                console.log('fips', county.dataset.fips);
-                console.log('education', county.dataset.education + '%');
-
                 const tooltip = document.querySelector('#tooltip');
-                tooltip.style.opacity = 1;
-                console.log(d3.event.pageX)
-                tooltip.style.left = d3.event.pageX;
-                tooltip.style.top = d3.event.pageY;
+                tooltip.style.opacity = 0.8;
+                tooltip.style.left = d3.event.pageX + 10;
+                tooltip.style.top = d3.event.pageY - 10;
                 tooltip.textContent = `${data[d.id]['area_name']}, ${data[d.id]['state']}: ${data[d.id]['bachelorsOrHigher']}%`
                 tooltip.setAttribute('data-education', data[d.id]['bachelorsOrHigher'])
             })
