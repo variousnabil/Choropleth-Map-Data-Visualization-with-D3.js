@@ -12,11 +12,16 @@ const margin = {
     left: 32
 }
 
-const svg = d3.select('.container')
+const SVG_HEADER = d3.select('.container')
     .append('svg')
     .attr('viewBox', [0, 0, w, 150]);
 
-svg.append('text')
+const SVG_US_MAP = d3.select('.container')
+    .append('svg')
+    .attr('id', 'USMAP')
+    .attr('viewBox', [-145, 0, 1200, 630]);
+
+SVG_HEADER.append('text')
     .attr('x', w / 2)
     .attr('y', margin.top * 2)
     .attr('text-anchor', 'middle')
@@ -25,7 +30,7 @@ svg.append('text')
     .style('font-weight', 'bold')
     .text('United States Educational Attainment');
 
-svg.append('text')
+SVG_HEADER.append('text')
     .attr('x', w / 2)
     .attr('y', margin.top * 3.7)
     .attr('text-anchor', 'middle')
@@ -45,25 +50,21 @@ Promise.all([getEducationData, getCountyData])
 
         // education data simplified only 'id' and 'bachelorsOrHigher' data.
         const data = {};
-        educationData.forEach(item => {
-            data[item.fips] = {
-                state: item['state'],
-                area_name: item['area_name'],
-                bachelorsOrHigher: item['bachelorsOrHigher']
+        educationData.forEach(county => {
+            data[county.fips] = {
+                state: county['state'],
+                area_name: county['area_name'],
+                bachelorsOrHigher: county['bachelorsOrHigher']
             };
         });
-        console.log('data', data);
+        console.log('educationData formatted', data);
 
-        const colorScale = d3.scaleQuantize([3, 75], d3.schemeGreens[9]);
+        const colorScale = d3.scaleQuantize([3, 75], d3.schemeYlGn[9]);
 
         const path = d3.geoPath();
 
-        const US_MAP = d3.select('.container').append('svg')
-            .attr('id', 'USMAP')
-            .attr('viewBox', [-145, 0, 1200, 630]);
-
         // county path
-        US_MAP.append('g')
+        SVG_US_MAP.append('g')
             .selectAll('path')
             .data(topojson.feature(countyData, countyData.objects.counties).features)
             .join('path')
@@ -88,7 +89,7 @@ Promise.all([getEducationData, getCountyData])
             });
 
         // state path
-        US_MAP.append('path')
+        SVG_US_MAP.append('path')
             .datum(topojson.mesh(countyData, countyData.objects.states, (a, b) => a !== b))
             .attr('fill', 'none')
             .attr('stroke', 'white')
@@ -233,8 +234,8 @@ Promise.all([getEducationData, getCountyData])
         }
 
         const p = Math.max(0, d3.precisionFixed(0.05) - 2),
-            legendScale = d3.scaleQuantize([0.003, 0.75], d3.schemeGreens[9]);
-        US_MAP.append('g')
+            legendScale = d3.scaleQuantize([0.003, 0.75], d3.schemeYlGn[9]);
+        SVG_US_MAP.append('g')
             .attr('transform', `translate(600, 0)`)
             .append(() => legend({ color: legendScale, width: 260, tickFormat: "." + p + "%" }));
     });
