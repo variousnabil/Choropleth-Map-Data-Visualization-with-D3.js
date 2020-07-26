@@ -59,7 +59,8 @@ Promise.all([getEducationData, getCountyData])
         });
         console.log('educationData formatted', data);
 
-        const colorScale = d3.scaleQuantize([3, 75], d3.schemeYlGn[9]);
+        // const colorScale = d3.scaleQuantize([3, 75], d3.schemeYlGn[9]); // normal color
+        const interpolateScale = d3.scaleLinear([3, 75], [0, 1]); // experimental color
 
         const path = d3.geoPath();
 
@@ -71,7 +72,8 @@ Promise.all([getEducationData, getCountyData])
             .attr('class', 'county')
             .attr('data-fips', d => d.id)
             .attr('data-education', d => data[d.id]['bachelorsOrHigher'])
-            .attr('fill', d => colorScale(data[d.id]['bachelorsOrHigher']))
+            // .attr('fill', d => colorScale(data[d.id]['bachelorsOrHigher'])) // normal color
+            .attr('fill', d => d3.interpolateCool(interpolateScale(data[d.id]['bachelorsOrHigher']))) // experimental color
             .attr('d', path)
             .on('mouseover', (d, i) => {
                 const tooltip = document.querySelector('#tooltip');
@@ -95,6 +97,19 @@ Promise.all([getEducationData, getCountyData])
             .attr('stroke', 'white')
             .attr('stroke-linejoin', 'round')
             .attr('d', path);
+
+        // ramp template from https://observablehq.com/@d3/color-legend
+        function ramp(color, n = 256) {
+            const canvas = document.createElement('canvas')
+            canvas.setAttribute('width', n)
+            canvas.setAttribute('height', 1);
+            const context = canvas.getContext("2d");
+            for (let i = 0; i < n; ++i) {
+                context.fillStyle = color(i / (n - 1));
+                context.fillRect(i, 0, 1, 1);
+            }
+            return canvas;
+        }
 
         // legend template from https://observablehq.com/@d3/color-legend 
         function legend({
@@ -234,7 +249,8 @@ Promise.all([getEducationData, getCountyData])
         }
 
         const p = Math.max(0, d3.precisionFixed(0.05) - 2),
-            legendScale = d3.scaleQuantize([0.003, 0.75], d3.schemeYlGn[9]);
+            // legendScale = d3.scaleQuantize([0.003, 0.75], d3.schemeYlGn[9]); // normal color
+            legendScale = d3.scaleSequential([0.003, 0.75], d3.interpolateCool); // experimental color
         SVG_US_MAP.append('g')
             .attr('transform', `translate(600, 0)`)
             .append(() => legend({ color: legendScale, width: 260, tickFormat: "." + p + "%" }));
